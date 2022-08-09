@@ -12,7 +12,6 @@ from sklearn import linear_model
 from statsmodels.graphics.tsaplots import plot_predict
 from statsmodels.tsa.arima.model import ARIMA
 import plotly.express as px
-from tqdm import tqdm
 import pandas as pd
 from basketball_reference_scraper.players import get_stats, get_game_logs, get_player_headshot
 from basketball_reference_scraper.teams import get_roster, get_team_stats, get_opp_stats, get_roster_stats, get_team_misc
@@ -37,8 +36,8 @@ teams = ['PHO','ATL', 'BRK','BOS', 'CHA', 'CHI', 'CLE', 'DAL', 'DEN', 'DET', 'GS
 
 def get_data(start: int, teams: list) -> pd.core.frame.DataFrame:
     players_final = pd.DataFrame()
-    for i in tqdm(range(start, (date.today().year)+1)):
-        for j in tqdm(teams):
+    for i in (range(start, (date.today().year)+1)):
+        for j in (teams):
             df=get_roster_stats(j, i)
             df['YEAR'] = i
             players_final = pd.concat([df, players_final]).reset_index(drop=True)
@@ -58,7 +57,7 @@ def retrieve_data():
     year_list = players['YEAR'].values.tolist()
     name_list = players["PLAYER"].values.tolist()
     games = pd.DataFrame()
-    for ind in tqdm(range((len(name_list)))):
+    for ind in (range((len(name_list)))):
         try:
     
             code = get_code(name_list[ind])
@@ -79,7 +78,7 @@ def retrieve_data():
             next
     games.to_csv('Final_5_year_log.csv')
     games2=pd.DataFrame()
-    for i in tqdm(range(len(error_list))):
+    for i in (range(len(error_list))):
         try:
             try:
                 code=pb.generate_code(error_list[i])
