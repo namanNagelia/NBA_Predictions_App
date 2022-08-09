@@ -254,7 +254,7 @@ def players_dropdown():
     return res
 
 #Get data===================================================================================
-game_logs = pd.read_csv(r'C:\Users\nagelnn1\Documents\aspire\NBA_Predictions_App\Final_5_year_log.csv')
+game_logs = pd.read_csv(r'Final_5_year_log.csv')
 game_logs.drop_duplicates()
 game_logs.drop('Unnamed: 0', axis=1, inplace=True)
 players_list = players_dropdown()
