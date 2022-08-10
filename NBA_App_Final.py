@@ -289,7 +289,7 @@ with st.sidebar:
 with st.sidebar:
     model_selector = st.radio(
         "Choose a model to use:",
-        ("Simple Linear Regression", "ARIMA"), index=1
+        ("Simple Linear Regression", "ARIMA"), index=0
     )
 with st.sidebar:
     st.image(image = get_player_headshot(players_select))
