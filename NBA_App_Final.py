@@ -244,6 +244,8 @@ def linear_reg_forecast(df, metric):
 
 
 #Streamlit App============================================================
+t1 = datetime.datetime.now()
+print("started " + str(t1))
 
 def players_dropdown():
     players = []
@@ -259,6 +261,9 @@ game_logs.drop_duplicates()
 game_logs.drop('Unnamed: 0', axis=1, inplace=True)
 players_list = players_dropdown()
 
+t2 = datetime.datetime.now()
+print('got logs ' + str(t2))
+print('time elapsed: ' + str(t2-t1))
 
 
 #SideBar
@@ -310,6 +315,9 @@ elif(model_selector == 'ARIMA'):
 
 
 
+t3 = datetime.datetime.now()
+print('made sidebar ' + str(t2))
+print('elapsed: ' + str(t3-t2))
 
 #Graphs
 df_smas = df2.drop(df2.tail(30).index)
@@ -348,6 +356,9 @@ compare_graph.update_layout(hovermode="x", showlegend = True, xaxis={"rangeslide
 
 
 
+t4 = datetime.datetime.now()
+print('made graphs ' + str(t4))
+print('elapsed: ' + str(t4-t3))
 
 
 #App Formatting
@@ -403,12 +414,16 @@ with tab4:
         st.write(df_c)
         st.download_button(label = 'Download Predictions⬇️', data = convert_df(df_c), file_name =players_select+'_'+stat_select + '_'+"predictions.csv")   
 
-
+t5 = datetime.datetime.now()
+print('made tabs ' + str(t5))
+print('elapsed: ' + str(t5-t4))
 st.header('Credits')
 st.write("App made by Naman Nagelia")
 st.write("API to gather Basketball Reference Data https://github.com/vishaalagartha/basketball_reference_scraper")
 st.write("All data from basketball Reference")    
-
+t6 = datetime.datetime.now()
+print('finished ' + str(t6))
+print('elapsed: ' + str(t6-t5))
 #Deploy in a cloud and try to schedule : Amazon S3 to store file, EC2 - Server to run jobs
 
 #1. Tabs, put predicitons in a tab
