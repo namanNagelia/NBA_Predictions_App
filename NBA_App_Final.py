@@ -313,11 +313,13 @@ elif(model_selector == 'ARIMA'):
     df2 = ARMA_forecast(df1, stat_select)
     df_c = ARMA_forecast(df_compare, stat_select)
 
-
+t2a = datetime.datetime.now()
+print('made forecasts ' + str(t2a))
+print('elapsed ' + str(t2a-t2))
 
 t3 = datetime.datetime.now()
 print('made sidebar ' + str(t2))
-print('elapsed: ' + str(t3-t2))
+print('elapsed: ' + str(t3-t2a))
 
 #Graphs
 df_smas = df2.drop(df2.tail(30).index)
