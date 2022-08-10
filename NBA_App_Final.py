@@ -52,8 +52,8 @@ def get_code(name):
     url = get_player_headshot(name)
     code = url.split('/')[-1][:-4]
     return code
-def retrieve_data():
-    players = get_data
+def retrieve_data(start: int, teams: list):
+    players = get_data(start, teams)
     year_list = players['YEAR'].values.tolist()
     name_list = players["PLAYER"].values.tolist()
     games = pd.DataFrame()
@@ -76,7 +76,7 @@ def retrieve_data():
             error_list.append(name_list[ind])
             error_years.append(year_list[ind])
             next
-    games.to_csv('Final_5_year_log.csv')
+    games.to_csv('Final_5_year_log_new_test.csv')
     games2=pd.DataFrame()
     for i in (range(len(error_list))):
         try:
@@ -101,7 +101,7 @@ def retrieve_data():
         except:
             next
     games = pd.concat([games2, games], ignore_index=True)
-    games.to_csv('5_year_data_august Test.csv')
+    games.to_csv('Final_5_year_log_new_test2.csv')
 
 #=======================================================================
 
