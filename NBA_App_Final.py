@@ -147,9 +147,9 @@ def break_dates(df):
 
 
 #moving averages
-def smas(df, metric):
-    df['15SMA'] = df[metric].rolling(window=20).mean()
-    df['15dayEWM'] = df[metric].ewm(span=15, adjust=False).mean()
+def smas(df, metric, step):
+    df['SMA'] = df[metric].rolling(window=step).mean()
+    df['EWM'] = df[metric].ewm(span=step, adjust=False).mean()
 
 
 #more DF Formatting for the Modles
@@ -209,12 +209,12 @@ def ARMA_forecast(df, stat):
 #Linear Reg Forecast: returns DF with predicted and actual lines, print r^2, put error to show how good it fits
 
 def linear_reg_forecast(df, metric):
-    smas(df, metric)
+    smas(df, metric, 15)
     df['game_number']=0 
     for i in range(len(df)):
         df['game_number'][i] = i+1 #make column
     X = df['game_number'].values.reshape(-1, 1)
-    Y = df['15dayEWM'].values
+    Y = df['EWM'].values
     model = LinearRegression()  
     model.fit(X, Y)  # perform linear regression
     vals = []
@@ -256,7 +256,7 @@ def players_dropdown():
     return res
 
 #Get data===================================================================================
-game_logs = pd.read_csv(r'Final_5_year_log.csv')
+game_logs = pd.read_csv(r"Final_5_year_log.csv")
 game_logs.drop_duplicates()
 game_logs.drop('Unnamed: 0', axis=1, inplace=True)
 players_list = players_dropdown()
@@ -295,11 +295,7 @@ with st.sidebar:
     st.image(image = get_player_headshot(players_select))
     st.image(image = get_player_headshot(player2))
    
-    st.subheader('Selected Parameters')
 
-    st.write(("Name: " + players_select))
-    st.write(("Player to Compare to: " + player2))
-    st.write(('Stat: ' + format_func(stat_select)))
 df1 = get_data_name(players_select)
 set_df(df1)
 
@@ -322,17 +318,26 @@ print('made sidebar ' + str(t2))
 print('elapsed: ' + str(t3-t2a))
 
 #Graphs
+#=========================================
 df_smas = df2.drop(df2.tail(30).index)
-smas(df_smas, stat_select)
+smas(df_smas, stat_select, 15)
 
-smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['15SMA']], markers=True, width = 900, height = 500)
+smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['SMA']], markers=True, width = 900, height = 500)
 smas_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select),xaxis={"rangeslider":{"visible":True}})
 
-EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['15dayEWM']], markers=True,width = 900, height = 500 )
+EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['EWM']], markers=True,width = 900, height = 500 )
 EWMA_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
 EWMA_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":True}})
 
+
+#====================================
+
+
 df2.rename(columns = {'predicted_mean':'Predictions'}, inplace = True)
+
+
+
+
 prediction_graph = px.line(df2, x=df2['game_number'], y=[df2[stat_select], df2['Predictions']], title=players_select + ' Predicted Stats', markers=True,width = 900, height = 600)
 prediction_graph.update_layout( xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
 prediction_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":True}})
@@ -341,19 +346,15 @@ prediction_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":Tru
 
 df_c.rename(columns = {'predicted_mean':'Predictions'}, inplace = True)
 compare_graph = px.line(df2, x=df2['game_number'], y=df2['Predictions'], title='Future Comparisons', markers=True,width = 900, height = 600)
-
-
-
 compare_graph = go.Figure(layout=go.Layout(height=600, width=900))
-
-
 compare_graph.add_trace(go.Line(x=df2['game_number'], y=df2['Predictions'], name = players_select + " predictions"))
 compare_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
-
-
 compare_graph.add_trace(go.Line(x=df_c['game_number'], y=df_c['Predictions'], name =(player2 + " predictions")))
 compare_graph.update_layout(hovermode="x", showlegend = True, xaxis={"rangeslider":{"visible":True}})
-
+categories = options=list(CHOICES.keys())
+compare_radar = go.Figure()
+compare_radar.add_trace(go.Scatterpolar(r=[df1['PTS'].mean(),df1['TRB'].mean(),df1['AST'].mean(),df1['STL'].mean(),df1['BLK'].mean(),df1['TOV'].mean()], theta = categories, fill = 'toself', name = players_select))
+compare_radar.add_trace(go.Scatterpolar(r=[df_compare['PTS'].mean(),df_compare['TRB'].mean(),df_compare['AST'].mean(),df_compare['STL'].mean(),df_compare['BLK'].mean(),df_compare['TOV'].mean()], theta = categories, fill = 'toself', name = player2))
 
 
 
@@ -380,18 +381,31 @@ tab1, tab2, tab3, tab4 = st.tabs(['Simple Moving Average', "Exponentially Weight
 
 with tab1:
     st.subheader("Simple Moving Average")
+    step_smas = st.slider('Set Step for Moving Averages', 1, 30, 15, 1)
+    df_smas = df2.drop(df2.tail(30).index)
+    smas(df_smas, stat_select,step_smas)
+    smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['SMA']], markers=True, width = 900, height = 500)
+    smas_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select),xaxis={"rangeslider":{"visible":True}})
+
     st.write(smas_graph)
-    with st.expander("See Raw Data"):
-                df_export1 = df1.assign(EWM=df_smas['15dayEWM'], SMA = df_smas['15SMA'])
+    with st.expander("See Data Table"):
+                df_export1 = df1.assign(EWM=df_smas['EWM'], SMA = df_smas['SMA'])
                 st.write(df_export1)
                 st.download_button(label = 'Download Data⬇️', key = 'download1', data = convert_df(df_export1), file_name =players_select+ "_data.csv")
 
 
 with tab2:
     st.subheader("Exponentially Weighted Moving Average")
+    step_ewmas = st.slider('Set Step for Moving Averages', 1, 30, 15, 1, key='ABC')
+    df_smas = df2.drop(df2.tail(30).index)
+    smas(df_smas, stat_select,step_ewmas)
+    
+    EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['EWM']], markers=True,width = 900, height = 500 )
+    EWMA_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
+    EWMA_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":True}})
     st.write(EWMA_graph)
-    with st.expander("See Raw Data"):
-                df_export1 = df1.assign(EWM=df_smas['15dayEWM'], SMA = df_smas['15SMA'])
+    with st.expander("See Data Table"):
+                df_export1 = df1.assign(EWM=df_smas['EWM'], SMA = df_smas['SMA'])
                 st.write(df_export1)
                 st.download_button(label = 'Download Data⬇️', key='download2', data = convert_df(df_export1), file_name =players_select+ "_data.csv")
 
@@ -399,20 +413,17 @@ with tab2:
 with tab3:
     st.subheader("Predictions")
     st.write(prediction_graph)
-    with st.expander("Export Predictions"):
+    with st.expander("See Data Table"):
         st.write(df2)
         st.download_button(label = 'Download Predictions⬇️', data = convert_df(df2), file_name =players_select+'_'+stat_select + '_'+"predictions.csv")
 
 with tab4:
     st.subheader('Comparison of ' + players_select + " and " + player2)
-    player1 = st.checkbox('Show Stats of ' + players_select)
-    player2_cb = st.checkbox('Show Stats of ' + player2)
-    if player2_cb:
-        compare_graph.add_trace(go.Scatter(x=df_c['game_number'], y=df_c[stat_select], name =(player2 + " " + stat_select)))
-    if player1:
-        compare_graph.add_trace(go.Scatter(x=df2['game_number'], y=df2[stat_select], name =(players_select + " " + stat_select)))
+    compare_graph.add_trace(go.Scatter(x=df_c['game_number'], y=df_c[stat_select], name =(player2 + " " + stat_select)))
+    compare_graph.add_trace(go.Scatter(x=df2['game_number'], y=df2[stat_select], name =(players_select + " " + stat_select)))
     st.write(compare_graph)
-    with st.expander("Export Predictions"):
+    st.write(compare_radar)
+    with st.expander("See Data Table"):
         st.write(df_c)
         st.download_button(label = 'Download Predictions⬇️', data = convert_df(df_c), file_name =players_select+'_'+stat_select + '_'+"predictions.csv")   
 
