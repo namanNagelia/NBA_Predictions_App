@@ -31,7 +31,7 @@ import plotly.graph_objects as go
 
 
 #Data Retrieval===============================================================
-players_final = pd.DataFrame()
+#players_final = pd.DataFrame()
 teams = ['PHO','ATL', 'BRK','BOS', 'CHA', 'CHI', 'CLE', 'DAL', 'DEN', 'DET', 'GSW', 'HOU', 'IND', 'LAC','LAL', 'MEM', 'MIA', 'MIL', 'MIN', 'NOP', 'NYK', 'OKC', 'ORL', 'PHI', 'POR', 'SAC', 'SAS', 'TOR', 'UTA', 'WAS']
 
 def get_data(start: int, teams: list) -> pd.core.frame.DataFrame:
@@ -42,17 +42,17 @@ def get_data(start: int, teams: list) -> pd.core.frame.DataFrame:
             df['YEAR'] = i
             players_final = pd.concat([df, players_final]).reset_index(drop=True)
     return players_final
-error_list = []
-error_years = []
+#error_list = []
+#error_years = []
 
 #players = get_data
 #name_list = players["PLAYER"].values.tolist()
 #year_list = players['YEAR'].values.tolist()
-def get_code(name):
+#def get_code(name):
     url = get_player_headshot(name)
     code = url.split('/')[-1][:-4]
     return code
-def retrieve_data(start: int, teams: list):
+#def retrieve_data(start: int, teams: list):
     players = get_data(start, teams)
     year_list = players['YEAR'].values.tolist()
     name_list = players["PLAYER"].values.tolist()
@@ -151,6 +151,10 @@ def smas(df, metric, step):
     df['SMA'] = df[metric].rolling(window=step).mean()
     df['EWM'] = df[metric].ewm(span=step, adjust=False).mean()
     df['Date'] = df.index.strftime('%Y-%m-%d')
+    
+    df['game_number'] = 0
+    for i in range(0, len(df)):
+        df['game_number'][i] = i+1
 #more DF Formatting for the Modles
 def fill_df2(metric, df):
     dates = pd.date_range(start=df.index[0], end = df.index[0]+datetime.timedelta(days=len(df.index)-1))
@@ -288,7 +292,7 @@ with st.sidebar:
 with st.sidebar:
     model_selector = st.radio(
         "Choose a model to use:",
-        ("Simple Linear Regression", "ARIMA"), index=0
+        ("Simple Linear Regression", "ARIMA"), index=1
     )
 with st.sidebar:
     st.image(image = get_player_headshot(players_select))
@@ -324,14 +328,14 @@ smas(df_smas, stat_select, 15)
 
 
 
-smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['SMA']], markers=True,width = 900, height = 500, hover_data=[df_smas['Date']] )
+smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['SMA']], markers=True,width = 900, height = 500, hover_data=['Date'] )
 smas_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
 smas_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":True}})
 
 
 
 
-EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['EWM']], markers=True,width = 900, height = 500, hover_data=[df_smas['Date']] )
+EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['EWM']], markers=True,width = 900, height = 500, hover_data=['Date'] )
 EWMA_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
 EWMA_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":True}})
 
@@ -388,7 +392,7 @@ tab1, tab2, tab3, tab4 = st.tabs(['Simple Moving Average', "Exponentially Weight
 with tab1:
     st.subheader("Simple Moving Average")
     step_smas = st.slider('Set Step for Moving Averages', 1, 30, 15, 1)
-    #df_smas = df2.drop(df2.tail(30).index)
+    df_smas = df1
     smas(df_smas, stat_select,step_smas)
     smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['SMA']], markers=True,width = 900, height = 500, hover_data=[df_smas['Date']] )
     smas_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
@@ -404,7 +408,7 @@ with tab1:
 with tab2:
     st.subheader("Exponentially Weighted Moving Average")
     step_ewmas = st.slider('Set Step for Moving Averages', 1, 30, 15, 1, key='ABC')
-    #df_smas = df2.drop(df2.tail(30).index)
+    df_smas = df1
     smas(df_smas, stat_select,step_ewmas)
     
     EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['EWM']], markers=True,width = 900, height = 500, hover_data=[df_smas['Date']] )
