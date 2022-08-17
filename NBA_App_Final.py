@@ -379,7 +379,7 @@ print('elapsed: ' + str(t4-t3))
 
 #to do: add title, show raw data and all the game logs
 
-st.title('NBA Stats Predictor TEST')
+st.title('NBA Stats Predictor')
 st.markdown('The NBA is a game of change, and a players performance frequently changes. If you ever wanted to know how a player will progress and play in their next few games, this is the app for you. Select a player from the dropdown, the stat, and the model to use. You will then be given the moving averages for tracking and the predictions below, which can all be exported to graphs for your own use. Good luck! ')
 def convert_df(df):
      return df.to_csv().encode('utf-8')
