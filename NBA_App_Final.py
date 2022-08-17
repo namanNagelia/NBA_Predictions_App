@@ -150,8 +150,7 @@ def break_dates(df):
 def smas(df, metric, step):
     df['SMA'] = df[metric].rolling(window=step).mean()
     df['EWM'] = df[metric].ewm(span=step, adjust=False).mean()
-
-
+    df['Date'] = df.index.strftime('%Y-%m-%d')
 #more DF Formatting for the Modles
 def fill_df2(metric, df):
     dates = pd.date_range(start=df.index[0], end = df.index[0]+datetime.timedelta(days=len(df.index)-1))
@@ -319,13 +318,20 @@ print('elapsed: ' + str(t3-t2a))
 
 #Graphs
 #=========================================
-df_smas = df2.drop(df2.tail(30).index)
+df_smas = df1
 smas(df_smas, stat_select, 15)
 
-smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['SMA']], markers=True, width = 900, height = 500)
-smas_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select),xaxis={"rangeslider":{"visible":True}})
 
-EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['EWM']], markers=True,width = 900, height = 500 )
+
+
+smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['SMA']], markers=True,width = 900, height = 500, hover_data=[df_smas['Date']] )
+smas_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
+smas_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":True}})
+
+
+
+
+EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['EWM']], markers=True,width = 900, height = 500, hover_data=[df_smas['Date']] )
 EWMA_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
 EWMA_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":True}})
 
@@ -369,7 +375,7 @@ print('elapsed: ' + str(t4-t3))
 
 #to do: add title, show raw data and all the game logs
 
-st.title('NBA Stats Predictor')
+st.title('NBA Stats Predictor TEST')
 st.markdown('The NBA is a game of change, and a players performance frequently changes. If you ever wanted to know how a player will progress and play in their next few games, this is the app for you. Select a player from the dropdown, the stat, and the model to use. You will then be given the moving averages for tracking and the predictions below, which can all be exported to graphs for your own use. Good luck! ')
 def convert_df(df):
      return df.to_csv().encode('utf-8')
@@ -382,10 +388,11 @@ tab1, tab2, tab3, tab4 = st.tabs(['Simple Moving Average', "Exponentially Weight
 with tab1:
     st.subheader("Simple Moving Average")
     step_smas = st.slider('Set Step for Moving Averages', 1, 30, 15, 1)
-    df_smas = df2.drop(df2.tail(30).index)
+    #df_smas = df2.drop(df2.tail(30).index)
     smas(df_smas, stat_select,step_smas)
-    smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['SMA']], markers=True, width = 900, height = 500)
-    smas_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select),xaxis={"rangeslider":{"visible":True}})
+    smas_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['SMA']], markers=True,width = 900, height = 500, hover_data=[df_smas['Date']] )
+    smas_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
+    smas_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":True}})
 
     st.write(smas_graph)
     with st.expander("See Data Table"):
@@ -397,12 +404,13 @@ with tab1:
 with tab2:
     st.subheader("Exponentially Weighted Moving Average")
     step_ewmas = st.slider('Set Step for Moving Averages', 1, 30, 15, 1, key='ABC')
-    df_smas = df2.drop(df2.tail(30).index)
+    #df_smas = df2.drop(df2.tail(30).index)
     smas(df_smas, stat_select,step_ewmas)
     
-    EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['EWM']], markers=True,width = 900, height = 500 )
+    EWMA_graph = px.line(df_smas, x=df_smas['game_number'], y=[df_smas[stat_select], df_smas['EWM']], markers=True,width = 900, height = 500, hover_data=[df_smas['Date']] )
     EWMA_graph.update_layout(xaxis_title='Games Since 2018', yaxis_title=format_func(stat_select))
     EWMA_graph.update_layout(hovermode="x",xaxis={"rangeslider":{"visible":True}})
+
     st.write(EWMA_graph)
     with st.expander("See Data Table"):
                 df_export1 = df1.assign(EWM=df_smas['EWM'], SMA = df_smas['SMA'])
